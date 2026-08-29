@@ -2,20 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BatteryCharging, IdCard, Wrench } from "lucide-react";
-import {
-  DataTable,
-  Metric,
-  Meter,
-  PageHead,
-  Panel,
-  Pill,
-  Td,
-  Th,
-} from "@/components/transit/primitives";
+import { Metric, PageHead } from "@/components/transit/primitives";
 import { BusManager } from "@/components/transit/BusManager";
 import { busesQueryKey, fetchBuses } from "@/lib/fleet-api";
-import { crewTone } from "@/lib/transit-ui";
-import { CREW_ROSTER } from "@/data/transitData";
+import { CrewManager } from "@/components/transit/CrewManager";
+import { crewQueryKey, fetchCrew } from "@/lib/crew-api";
 
 export const Route = createFileRoute("/fleet")({
   head: () => ({
@@ -43,8 +34,9 @@ function FleetCrew() {
 
   const available = buses.filter((b) => b.status === "AVAILABLE").length;
   const workshop = buses.filter((b) => b.status === "MAINTENANCE").length;
-  const restCrew = CREW_ROSTER.filter((c) => c.status === "Rest Period").length;
-  const overSpread = CREW_ROSTER.filter((c) => c.dailySpreadoverHours > 11).length;
+  const { data: crew = [] } = useQuery({ queryKey: crewQueryKey, queryFn: fetchCrew });
+  const restCrew = crew.filter((c) => c.status === "OFF_DUTY").length;
+  const overSpread = crew.filter((c) => c.daily_spreadover_hours > 11).length;
 
   return (
     <div className="space-y-8">
@@ -95,50 +87,7 @@ function FleetCrew() {
       {tab === "fleet" ? (
         <BusManager />
       ) : (
-        <Panel title="Crew roster" hint="Weekly hours, spreadover and licence validity under CMVR rules.">
-          <DataTable
-            head={
-              <>
-                <Th>Badge</Th>
-                <Th>Role</Th>
-                <Th>Depot</Th>
-                <Th className="w-44">Spreadover today</Th>
-                <Th className="text-right">Weekly hrs</Th>
-                <Th className="text-right">Punctuality</Th>
-                <Th>Status</Th>
-              </>
-            }
-          >
-            {CREW_ROSTER.map((c) => {
-              const spread = Math.round((c.dailySpreadoverHours / 12) * 100);
-              return (
-                <tr key={c.id} className="transition-colors duration-200 hover:bg-muted">
-                  <Td>
-                    <p className="font-semibold">{c.name}</p>
-                    <p className="num text-xs text-muted-foreground">{c.badgeNumber}</p>
-                  </Td>
-                  <Td className="text-muted-foreground">{c.role}</Td>
-                  <Td className="text-muted-foreground">{c.depot}</Td>
-                  <Td>
-                    <p className="num text-sm font-semibold">{c.dailySpreadoverHours} h / 12 h</p>
-                    <Meter
-                      value={spread}
-                      tone={spread > 92 ? "destructive" : spread > 75 ? "accent" : "primary"}
-                      className="mt-1.5"
-                    />
-                  </Td>
-                  <Td className="num text-right">{c.weeklyHours}</Td>
-                  <Td className="num text-right font-semibold text-secondary">
-                    {c.punctualityScore}%
-                  </Td>
-                  <Td>
-                    <Pill tone={crewTone(c.status)}>{c.status}</Pill>
-                  </Td>
-                </tr>
-              );
-            })}
-          </DataTable>
-        </Panel>
+        <CrewManager />
       )}
     </div>
   );

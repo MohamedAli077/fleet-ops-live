@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { PageHead } from "@/components/transit/primitives";
+import { SimulationControls } from "@/components/transit/SimulationControls";
+import { DayTimeline } from "@/components/transit/DayTimeline";
 
 const NetworkMap = lazy(() =>
   import("@/components/transit/NetworkMap").then((m) => ({ default: m.NetworkMap })),
@@ -34,6 +36,7 @@ function MapPage() {
         title="Route map"
         description="Every corridor drawn from the operational route register — the same data the scheduler and the simulation run on."
       />
+      <SimulationControls />
       <ClientOnly
         fallback={
           <div className="h-[640px] w-full animate-pulse rounded-md bg-muted" aria-hidden="true" />
@@ -45,6 +48,7 @@ function MapPage() {
           <NetworkMap />
         </Suspense>
       </ClientOnly>
+      <DayTimeline />
     </div>
   );
 }

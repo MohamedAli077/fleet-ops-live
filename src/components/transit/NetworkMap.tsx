@@ -4,7 +4,7 @@ import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from "
 import { Panel, Pill } from "@/components/transit/primitives";
 import { Input } from "@/components/ui/input";
 import { DTC_DEPOTS, DTC_ROUTES } from "@/data/transitData";
-import { useSimulatedBuses } from "@/lib/simulation";
+import { busesAt, useDaySimulation } from "@/lib/day-simulation";
 import { busTone } from "@/lib/transit-ui";
 import { busesQueryKey, fetchBuses, statusTone } from "@/lib/fleet-api";
 import type { DTCRoute } from "@/lib/transit-types";
@@ -34,7 +34,8 @@ function routeTerminals(route: DTCRoute) {
 export function NetworkMap() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(DTC_ROUTES[0]?.id ?? null);
-  const buses = useSimulatedBuses();
+  const { minute, clock } = useDaySimulation();
+  const buses = useMemo(() => busesAt(minute), [minute]);
   const { data: fleet = [] } = useQuery({ queryKey: busesQueryKey, queryFn: fetchBuses });
 
   const results = useMemo(() => {
@@ -112,7 +113,7 @@ export function NetworkMap() {
       <Panel
         className="min-w-0"
         title="Network map"
-        hint="OpenStreetMap corridors, depots and simulated vehicle positions."
+        hint="OpenStreetMap corridors, depots and operational-simulation vehicle positions (modelled, not live GPS)."
         bodyClassName="p-0"
         action={
           <button
@@ -223,6 +224,9 @@ export function NetworkMap() {
                       {b.passengers} on board · {b.batteryOrFuelPct}% {b.fuelType} · {b.depot}
                     </p>
                     <p className="text-xs">
+                      {b.tripCode} · {b.tripWindow} · {b.tripProgressPct}% through trip
+                    </p>
+                    <p className="text-xs">
                       {b.status === "on-time" ? "On time" : `${b.delayMins} min late`}
                       {record ? ` · fleet status ${record.status} · ${record.capacity} seats` : ""}
                     </p>
@@ -235,7 +239,8 @@ export function NetworkMap() {
         <div className="flex flex-wrap items-center gap-2 p-4">
           <Pill tone="primary">{DTC_ROUTES.length} routes</Pill>
           <Pill tone="accent">{DTC_DEPOTS.length} depots</Pill>
-          <Pill tone={busTone("on-time")}>{visibleBuses.length} buses tracked</Pill>
+          <Pill tone={busTone("on-time")}>{visibleBuses.length} buses simulated</Pill>
+          <Pill tone="neutral">Operational simulation · {clock}</Pill>
           {fleet.length ? <Pill tone={statusTone("AVAILABLE")}>{fleet.filter((f) => f.status === "AVAILABLE").length} available</Pill> : null}
         </div>
       </Panel>
