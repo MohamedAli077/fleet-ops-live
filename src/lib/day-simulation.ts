@@ -144,6 +144,16 @@ function pointAt(routeNumber: string, t: number, reverse: boolean) {
   return { lat, lng, heading: (heading + 360) % 360 };
 }
 
+/** Reported time of the live disruption, parsed from its own record. */
+export const DISRUPTION_MIN = (() => {
+  const m = INITIAL_DISRUPTION.timestamp.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!m) return 10 * 60 + 45;
+  let h = Number(m[1]);
+  if (m[3]?.toUpperCase() === "PM" && h < 12) h += 12;
+  if (m[3]?.toUpperCase() === "AM" && h === 12) h = 0;
+  return h * 60 + Number(m[2]);
+})();
+
 /* ---------------------------- derived state ------------------------ */
 
 export interface SimulatedBus extends ActiveBusPosition {
@@ -167,8 +177,8 @@ export function busesAt(simMinute: number): SimulatedBus[] {
     const disrupted =
       active &&
       active.routeNumber === INITIAL_DISRUPTION.routeNumber &&
-      simMinute >= clockToMinutes(INITIAL_DISRUPTION.reportedAt) &&
-      simMinute < clockToMinutes(INITIAL_DISRUPTION.reportedAt) + 20;
+      simMinute >= DISRUPTION_MIN &&
+      simMinute < DISRUPTION_MIN + 20;
 
     if (active) {
       const t = (simMinute - active.startMin) / (active.endMin - active.startMin);
@@ -291,7 +301,7 @@ function buildEvents(): SimEvent[] {
   }
 
   // Disruption + recovery, derived from the live disruption record.
-  const dMin = clockToMinutes(INITIAL_DISRUPTION.reportedAt);
+  const dMin = DISRUPTION_MIN;
   const affected = DAY_PLAN.filter(
     (t) => t.routeNumber === INITIAL_DISRUPTION.routeNumber && t.startMin <= dMin + 60 && t.endMin >= dMin,
   );
@@ -300,7 +310,7 @@ function buildEvents(): SimEvent[] {
     minute: dMin,
     kind: "DISRUPTION",
     title: `Route ${INITIAL_DISRUPTION.routeNumber} ${INITIAL_DISRUPTION.type.toLowerCase()}`,
-    detail: INITIAL_DISRUPTION.description,
+    detail: INITIAL_DISRUPTION.impactSummary,
   });
   events.push({
     id: "disruption-impact",
