@@ -115,6 +115,107 @@ export type Database = {
         }
         Relationships: []
       }
+      crew: {
+        Row: {
+          availability: string
+          consecutive_days: number
+          created_at: string
+          crew_code: string
+          current_assignment: string | null
+          daily_spreadover_hours: number
+          depot: string
+          id: string
+          license_valid_till: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          punctuality_score: number | null
+          role: string
+          shift: string
+          status: Database["public"]["Enums"]["crew_status"]
+          updated_at: string
+          weekly_hours: number
+        }
+        Insert: {
+          availability?: string
+          consecutive_days?: number
+          created_at?: string
+          crew_code: string
+          current_assignment?: string | null
+          daily_spreadover_hours?: number
+          depot: string
+          id?: string
+          license_valid_till?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          punctuality_score?: number | null
+          role?: string
+          shift?: string
+          status?: Database["public"]["Enums"]["crew_status"]
+          updated_at?: string
+          weekly_hours?: number
+        }
+        Update: {
+          availability?: string
+          consecutive_days?: number
+          created_at?: string
+          crew_code?: string
+          current_assignment?: string | null
+          daily_spreadover_hours?: number
+          depot?: string
+          id?: string
+          license_valid_till?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          punctuality_score?: number | null
+          role?: string
+          shift?: string
+          status?: Database["public"]["Enums"]["crew_status"]
+          updated_at?: string
+          weekly_hours?: number
+        }
+        Relationships: []
+      }
+      crew_events: {
+        Row: {
+          created_at: string
+          crew_id: string
+          detail: string | null
+          event_type: string
+          from_status: Database["public"]["Enums"]["crew_status"] | null
+          id: string
+          to_status: Database["public"]["Enums"]["crew_status"] | null
+        }
+        Insert: {
+          created_at?: string
+          crew_id: string
+          detail?: string | null
+          event_type: string
+          from_status?: Database["public"]["Enums"]["crew_status"] | null
+          id?: string
+          to_status?: Database["public"]["Enums"]["crew_status"] | null
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string
+          detail?: string | null
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["crew_status"] | null
+          id?: string
+          to_status?: Database["public"]["Enums"]["crew_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_events_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crew"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -129,6 +230,12 @@ export type Database = {
         | "MAINTENANCE"
         | "INACTIVE"
         | "RETIRED"
+      crew_status:
+        | "AVAILABLE"
+        | "ASSIGNED"
+        | "OFF_DUTY"
+        | "UNAVAILABLE"
+        | "INACTIVE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -262,6 +369,13 @@ export const Constants = {
         "MAINTENANCE",
         "INACTIVE",
         "RETIRED",
+      ],
+      crew_status: [
+        "AVAILABLE",
+        "ASSIGNED",
+        "OFF_DUTY",
+        "UNAVAILABLE",
+        "INACTIVE",
       ],
     },
   },
