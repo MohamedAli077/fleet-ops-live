@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bus_events: {
+        Row: {
+          bus_id: string
+          created_at: string
+          detail: string | null
+          event_type: string
+          from_status: Database["public"]["Enums"]["bus_status"] | null
+          id: string
+          to_status: Database["public"]["Enums"]["bus_status"] | null
+        }
+        Insert: {
+          bus_id: string
+          created_at?: string
+          detail?: string | null
+          event_type: string
+          from_status?: Database["public"]["Enums"]["bus_status"] | null
+          id?: string
+          to_status?: Database["public"]["Enums"]["bus_status"] | null
+        }
+        Update: {
+          bus_id?: string
+          created_at?: string
+          detail?: string | null
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["bus_status"] | null
+          id?: string
+          to_status?: Database["public"]["Enums"]["bus_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_events_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buses: {
+        Row: {
+          bus_code: string
+          bus_number: string
+          bus_type: string
+          capacity: number
+          created_at: string
+          current_assignment: string | null
+          depot: string
+          efficiency_score: number | null
+          energy_pct: number
+          id: string
+          last_maintenance: string | null
+          model: string | null
+          next_inspection_due: string | null
+          notes: string | null
+          odometer_km: number
+          retired_at: string | null
+          status: Database["public"]["Enums"]["bus_status"]
+          updated_at: string
+        }
+        Insert: {
+          bus_code: string
+          bus_number: string
+          bus_type?: string
+          capacity?: number
+          created_at?: string
+          current_assignment?: string | null
+          depot: string
+          efficiency_score?: number | null
+          energy_pct?: number
+          id?: string
+          last_maintenance?: string | null
+          model?: string | null
+          next_inspection_due?: string | null
+          notes?: string | null
+          odometer_km?: number
+          retired_at?: string | null
+          status?: Database["public"]["Enums"]["bus_status"]
+          updated_at?: string
+        }
+        Update: {
+          bus_code?: string
+          bus_number?: string
+          bus_type?: string
+          capacity?: number
+          created_at?: string
+          current_assignment?: string | null
+          depot?: string
+          efficiency_score?: number | null
+          energy_pct?: number
+          id?: string
+          last_maintenance?: string | null
+          model?: string | null
+          next_inspection_due?: string | null
+          notes?: string | null
+          odometer_km?: number
+          retired_at?: string | null
+          status?: Database["public"]["Enums"]["bus_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +123,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      bus_status:
+        | "AVAILABLE"
+        | "ASSIGNED"
+        | "MAINTENANCE"
+        | "INACTIVE"
+        | "RETIRED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +255,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bus_status: [
+        "AVAILABLE",
+        "ASSIGNED",
+        "MAINTENANCE",
+        "INACTIVE",
+        "RETIRED",
+      ],
+    },
   },
 } as const
